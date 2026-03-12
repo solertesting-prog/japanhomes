@@ -37,9 +37,14 @@ const Navbar = () => {
               Portfolio
             </Link>
             {isConnected && (
-              <Link to="/kyc" className="text-sm font-medium hover:text-[#C5A059] transition" data-testid="nav-kyc">
-                KYC
-              </Link>
+              <>
+                <Link to="/favorites" className="text-sm font-medium hover:text-[#C5A059] transition" data-testid="nav-favorites">
+                  Favorites
+                </Link>
+                <Link to="/kyc" className="text-sm font-medium hover:text-[#C5A059] transition" data-testid="nav-kyc">
+                  KYC
+                </Link>
+              </>
             )}
           </div>
 

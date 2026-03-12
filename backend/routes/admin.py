@@ -7,10 +7,11 @@ from models.user import User
 from models.property import Property
 from models.transaction import Transaction
 from database import get_database
+from utils.auth import verify_admin
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(verify_admin)])
 
 @router.get("/users", response_model=List[User])
 async def get_all_users(

@@ -8,7 +8,7 @@ from pathlib import Path
 from database import get_database, close_database
 
 # Import route modules
-from routes import auth, properties, transactions, reservations, kyc, admin
+from routes import auth, properties, transactions, reservations, kyc, admin, favorites
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -17,10 +17,11 @@ load_dotenv(ROOT_DIR / '.env')
 app = FastAPI(
     title="ZenCapital - Property Tokenization API",
     description="API for tokenizing real estate properties in Japan",
-    version="1.0.0"
+    version="1.0.0",
+    redirect_slashes=False  # Prevent 307 redirects that cause Mixed Content issues
 )
 
-# Create a router with the /api prefix
+# Create a router with the /api prefix - also disable redirects
 api_router = APIRouter(prefix="/api")
 
 # Include all route modules
@@ -30,6 +31,7 @@ api_router.include_router(transactions.router)
 api_router.include_router(reservations.router)
 api_router.include_router(kyc.router)
 api_router.include_router(admin.router)
+api_router.include_router(favorites.router)
 
 # Health check endpoint
 @api_router.get("/health")

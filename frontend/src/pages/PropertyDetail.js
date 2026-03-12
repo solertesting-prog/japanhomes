@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { MapPin, TrendingUp, Home, Calendar, ArrowLeft, ShoppingCart, Clock, Bell, BellOff } from 'lucide-react';
+import { MapPin, TrendingUp, Home, Calendar, ArrowLeft, ShoppingCart, Clock, Bell, BellOff, Heart } from 'lucide-react';
 import { api } from '../lib/api';
 import { useWallet } from '../contexts/WalletContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import { toast } from 'sonner';
 
 const PropertyDetail = () => {
@@ -14,11 +15,13 @@ const PropertyDetail = () => {
   const navigate = useNavigate();
   const { walletAddress, isConnected, connectWallet } = useWallet();
   const { watchProperty, unwatchProperty, isWatching, notificationsEnabled, enableNotifications } = useNotifications();
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tokenAmount, setTokenAmount] = useState(1);
   const [purchasing, setPurchasing] = useState(false);
   const [watching, setWatching] = useState(false);
+  const [favorited, setFavorited] = useState(false);
 
   useEffect(() => {
     loadProperty();
@@ -27,8 +30,9 @@ const PropertyDetail = () => {
   useEffect(() => {
     if (property) {
       setWatching(isWatching(property.id));
+      setFavorited(isFavorite(property.id));
     }
-  }, [property, isWatching]);
+  }, [property, isWatching, isFavorite]);
 
   const loadProperty = async () => {
     try {
@@ -117,6 +121,25 @@ const PropertyDetail = () => {
       watchProperty(property.id);
       setWatching(true);
       toast.success('You\'ll be notified about updates for this property');
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!isConnected) {
+      connectWallet();
+      return;
+    }
+
+    if (favorited) {
+      const success = await removeFavorite(property.id);
+      if (success) {
+        setFavorited(false);
+      }
+    } else {
+      const success = await addFavorite(property.id, property.name);
+      if (success) {
+        setFavorited(true);
+      }
     }
   };
 
@@ -355,15 +378,28 @@ const PropertyDetail = () => {
                       <Clock className="w-4 h-4 mr-2" />
                       Reserve for 24h
                     </Button>
-                    <Button
-                      onClick={handleToggleWatch}
-                      variant={watching ? "default" : "outline"}
-                      className={`w-full h-12 rounded-none ${watching ? 'bg-[#C5A059] text-[#181B38] hover:bg-[#C5A059]/90' : ''}`}
-                      data-testid="watch-btn"
-                    >
-                      {watching ? <BellOff className="w-4 h-4 mr-2" /> : <Bell className="w-4 h-4 mr-2" />}
-                      {watching ? 'Stop Watching' : 'Watch Property'}
-                    </Button>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={handleToggleFavorite}
+                        variant={favorited ? "default" : "outline"}
+                        className={`h-12 rounded-none ${favorited ? 'bg-red-500 hover:bg-red-600 text-white' : ''}`}
+                        data-testid="favorite-btn"
+                      >
+                        <Heart className={`w-4 h-4 mr-2 ${favorited ? 'fill-current' : ''}`} />
+                        {favorited ? 'Favorited' : 'Add to Favorites'}
+                      </Button>
+                      
+                      <Button
+                        onClick={handleToggleWatch}
+                        variant={watching ? "default" : "outline"}
+                        className={`h-12 rounded-none ${watching ? 'bg-[#C5A059] text-[#181B38] hover:bg-[#C5A059]/90' : ''}`}
+                        data-testid="watch-btn"
+                      >
+                        {watching ? <BellOff className="w-4 h-4 mr-2" /> : <Bell className="w-4 h-4 mr-2" />}
+                        {watching ? 'Watching' : 'Watch'}
+                      </Button>
+                    </div>
                   </>
                 )}
 
