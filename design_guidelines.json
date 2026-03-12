@@ -1,0 +1,152 @@
+{
+  "project_identity": {
+    "name": "ZenCapital",
+    "metaphor": "Digital Kintsugi",
+    "core_philosophy": "Precision, Serenity, Transparency",
+    "emotional_tone": "Trustworthy, Innovative, Calm, High-Value",
+    "target_audience": "Crypto-native investors & Traditional HNWIs interested in Japan"
+  },
+  "design_system": {
+    "theme_strategy": "hybrid_luxury",
+    "colors": {
+      "palette_name": "Kyoto Midnight",
+      "base": {
+        "light": "#FAFAF9",
+        "dark": "#0C0A09"
+      },
+      "primary": {
+        "hex": "#181B38",
+        "tailwind": "bg-[#181B38]",
+        "description": "Deep Indigo (Kachi-iro) - Used for primary actions and strong headers."
+      },
+      "secondary": {
+        "hex": "#5D6D7E",
+        "tailwind": "bg-[#5D6D7E]",
+        "description": "Slate Grey - For secondary information and borders."
+      },
+      "accent": {
+        "hex": "#C5A059",
+        "tailwind": "bg-[#C5A059]",
+        "description": "Kintsugi Gold - Used sparingly for active states, borders, and high-value data."
+      },
+      "functional": {
+        "success": "#10B981",
+        "error": "#EF4444",
+        "warning": "#F59E0B",
+        "info": "#3B82F6"
+      }
+    },
+    "typography": {
+      "font_family_headings": "Outfit, sans-serif",
+      "font_family_body": "Manrope, sans-serif",
+      "font_family_data": "Space Mono, monospace",
+      "scaling": {
+        "h1": "text-5xl md:text-7xl font-bold tracking-tight",
+        "h2": "text-3xl md:text-5xl font-semibold tracking-tight",
+        "h3": "text-2xl md:text-3xl font-medium",
+        "body": "text-base md:text-lg leading-relaxed text-muted-foreground",
+        "label": "text-xs font-bold uppercase tracking-widest text-muted-foreground"
+      }
+    },
+    "surfaces": {
+      "glass": "bg-white/60 dark:bg-black/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm",
+      "card": "bg-card text-card-foreground border-border shadow-sm hover:shadow-md transition-all duration-300",
+      "modal": "bg-background/95 backdrop-blur-sm border border-border shadow-2xl"
+    },
+    "radius": {
+      "default": "rounded-sm",
+      "buttons": "rounded-md",
+      "cards": "rounded-lg"
+    }
+  },
+  "layout_strategies": {
+    "grid_system": "Bento Grid",
+    "spacing_scale": "Relaxed (2x standard)",
+    "container_max_width": "max-w-7xl mx-auto px-4 md:px-8",
+    "section_spacing": "py-24 md:py-32"
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#181B38] text-white hover:bg-[#181B38]/90 h-12 px-8 rounded-none border-l-4 border-[#C5A059] font-medium tracking-wide transition-all",
+      "secondary": "bg-transparent border border-input hover:bg-accent hover:text-accent-foreground h-12 px-8 rounded-none font-medium tracking-wide",
+      "ghost": "hover:bg-accent hover:text-accent-foreground"
+    },
+    "cards": {
+      "property_listing": "group relative overflow-hidden bg-card border border-border/50 hover:border-[#C5A059]/50 transition-colors duration-500 rounded-sm",
+      "feature_card": "p-8 border border-border bg-gradient-to-br from-white/50 to-transparent dark:from-white/5 backdrop-blur-sm"
+    },
+    "inputs": {
+      "default": "h-12 bg-transparent border-b border-input focus:border-[#C5A059] focus:ring-0 rounded-none px-0 transition-colors placeholder:text-muted-foreground/50"
+    }
+  },
+  "visual_assets": {
+    "images": {
+      "hero_background": {
+        "url": "https://images.unsplash.com/photo-1764268845537-f3ce51fd6a6b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjB0b2t5byUyMGFyY2hpdGVjdHVyZSUyMHNreXNjcmFwZXIlMjBuaWdodHxlbnwwfHx8fDE3NzMzMjIyNTB8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Modern Tokyo Skyscraper at Night",
+        "usage": "Hero section background with dark overlay"
+      },
+      "property_kyoto": {
+        "url": "https://images.unsplash.com/photo-1756621609061-2df2cc8cf827?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHx0cmFkaXRpb25hbCUyMGt5b3RvJTIwbWFjaGl5YSUyMGhvdXNlJTIwZ2FyZGVufGVufDB8fHx8MTc3MzMyMjI1MXww&ixlib=rb-4.1.0&q=85",
+        "alt": "Traditional Kyoto Machiya",
+        "usage": "Featured property card or heritage section"
+      },
+      "property_modern": {
+        "url": "https://images.unsplash.com/photo-1771064252231-234d844a0e00?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjB0b2t5byUyMGFyY2hpdGVjdHVyZSUyMHNreXNjcmFwZXIlMjBuaWdodHxlbnwwfHx8fDE3NzMzMjIyNTB8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Luxury Modern Tokyo Apartment",
+        "usage": "Property listing card"
+      },
+      "investor_lifestyle": {
+        "url": "https://images.unsplash.com/photo-1758691737278-3af15b37af48?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwxfHxhc2lhbiUyMGJ1c2luZXNzJTIwdGVhbSUyMG1lZXRpbmclMjBtb2Rlcm4lMjBvZmZpY2V8ZW58MHx8fHwxNzczMzMjIyNjyfDA&ixlib=rb-4.1.0&q=85",
+        "alt": "Asian Business Team Meeting",
+        "usage": "About us or Investor relations section"
+      },
+      "interior_detail": {
+        "url": "https://images.unsplash.com/photo-1610375233775-6e0166927193?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjBtaW5pbWFsaXN0JTIwYXBhcnRtZW50JTIwaW50ZXJpb3IlMjBqYXBhbnxlbnwwfHx8fDE3NzMzMjIyNjN8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Minimalist Japanese Interior",
+        "usage": "Property detail page gallery"
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px, crisp edges",
+      "size": "w-5 h-5 for UI, w-8 h-8 for features"
+    }
+  },
+  "page_guidelines": {
+    "landing_page": {
+      "structure": [
+        "Hero: Full-screen video/image with 'Zen' typography and clear CTA.",
+        "Ticker: Live token transactions (minimalist marquee).",
+        "Bento Grid: Featured properties (Mix of tall and wide cards).",
+        "How It Works: 3-step process with minimalist line icons.",
+        "Trust: Blockchain verification stats + Partners.",
+        "Footer: Clean, multi-column with newsletter."
+      ],
+      "special_instructions": "Use parallax scrolling for the background images. Ensure the 'Connect Wallet' button is visible but not aggressive."
+    },
+    "marketplace": {
+      "layout": "Sidebar filter (left) + Grid (right).",
+      "card_style": "Image top (aspect-video), Data middle (Yield, Price, Location), Action bottom (Buy Token).",
+      "filters": "Clean checkbox lists, price range slider with gold accent."
+    },
+    "property_detail": {
+      "layout": "Hero Image Grid (1 main, 3 small). Sticky sidebar for 'Buy Token'. Main content: Description, Location (Map), Financials (Charts).",
+      "charts": "Use Recharts. Line color: #181B38 (Primary) or #10B981 (Success). Minimalist axis."
+    },
+    "dashboard": {
+      "layout": "Sidebar navigation (collapsed on mobile). Main area: Summary cards (Total Value, Yield), Portfolio Table, Transaction History.",
+      "visuals": "Use 'Glass' cards for summary metrics. Table rows should have hover effects."
+    }
+  },
+  "universal_guidelines": [
+    "Avoid gradients on text unless it's a very subtle gold shimmer.",
+    "Do NOT center align long text blocks. Left align for readability.",
+    "Use 'tracking-tight' for all headings larger than 24px.",
+    "Buttons should have a subtle 'active' state (scale 0.98).",
+    "All images must have 'object-cover' and rounded corners consistent with the theme.",
+    "Use 'gap-8' or 'gap-12' for section spacing to maintain the 'Zen' feel.",
+    "Interactive elements MUST have 'data-testid' attributes."
+  ],
+  "instructions_to_main_agent": "You are building a high-trust, high-value marketplace. Quality of UI is paramount. Do not rush the CSS. Ensure padding is generous. Use the provided image URLs for placeholders. If a specific component is missing in Shadcn, build it using Tailwind primitives matching the design system."
+}
