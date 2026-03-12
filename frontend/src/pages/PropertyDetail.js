@@ -3,23 +3,32 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { MapPin, TrendingUp, Home, Calendar, ArrowLeft, ShoppingCart, Clock } from 'lucide-react';
+import { MapPin, TrendingUp, Home, Calendar, ArrowLeft, ShoppingCart, Clock, Bell, BellOff } from 'lucide-react';
 import { api } from '../lib/api';
 import { useWallet } from '../contexts/WalletContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { toast } from 'sonner';
 
 const PropertyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { walletAddress, isConnected, connectWallet } = useWallet();
+  const { watchProperty, unwatchProperty, isWatching, notificationsEnabled, enableNotifications } = useNotifications();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tokenAmount, setTokenAmount] = useState(1);
   const [purchasing, setPurchasing] = useState(false);
+  const [watching, setWatching] = useState(false);
 
   useEffect(() => {
     loadProperty();
   }, [id]);
+
+  useEffect(() => {
+    if (property) {
+      setWatching(isWatching(property.id));
+    }
+  }, [property, isWatching]);
 
   const loadProperty = async () => {
     try {
@@ -88,6 +97,26 @@ const PropertyDetail = () => {
     } catch (error) {
       console.error('Reservation failed:', error);
       toast.error(error.response?.data?.detail || 'Reservation failed');
+    }
+  };
+
+  const handleToggleWatch = async () => {
+    if (!notificationsEnabled) {
+      const granted = await enableNotifications();
+      if (!granted) {
+        toast.error('Please enable notifications to watch properties');
+        return;
+      }
+    }
+
+    if (watching) {
+      unwatchProperty(property.id);
+      setWatching(false);
+      toast.success('Stopped watching this property');
+    } else {
+      watchProperty(property.id);
+      setWatching(true);
+      toast.success('You\'ll be notified about updates for this property');
     }
   };
 
@@ -325,6 +354,15 @@ const PropertyDetail = () => {
                     >
                       <Clock className="w-4 h-4 mr-2" />
                       Reserve for 24h
+                    </Button>
+                    <Button
+                      onClick={handleToggleWatch}
+                      variant={watching ? "default" : "outline"}
+                      className={`w-full h-12 rounded-none ${watching ? 'bg-[#C5A059] text-[#181B38] hover:bg-[#C5A059]/90' : ''}`}
+                      data-testid="watch-btn"
+                    >
+                      {watching ? <BellOff className="w-4 h-4 mr-2" /> : <Bell className="w-4 h-4 mr-2" />}
+                      {watching ? 'Stop Watching' : 'Watch Property'}
                     </Button>
                   </>
                 )}
