@@ -72,6 +72,14 @@ export const api = {
   removeFavorite: (propertyId, walletAddress) => axiosInstance.delete(`/favorites/${propertyId}?wallet_address=${walletAddress}`),
   toggleFavoriteNotifications: (propertyId, walletAddress, enabled) => 
     axiosInstance.put(`/favorites/${propertyId}/notifications?wallet_address=${walletAddress}&enabled=${enabled}`),
+
+  // Recommendations
+  getRecommendationsForUser: (walletAddress, limit = 6) => 
+    axiosInstance.get(`/recommendations/for-user/${walletAddress}?limit=${limit}`),
+  getSimilarProperties: (propertyId, limit = 4) => 
+    axiosInstance.get(`/recommendations/similar/${propertyId}?limit=${limit}`),
+  getTrendingProperties: (limit = 6) => 
+    axiosInstance.get(`/recommendations/trending?limit=${limit}`),
 };
 
 export default api;

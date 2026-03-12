@@ -8,7 +8,7 @@ from pathlib import Path
 from database import get_database, close_database
 
 # Import route modules
-from routes import auth, properties, transactions, reservations, kyc, admin, favorites
+from routes import auth, properties, transactions, reservations, kyc, admin, favorites, recommendations
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -32,6 +32,7 @@ api_router.include_router(reservations.router)
 api_router.include_router(kyc.router)
 api_router.include_router(admin.router)
 api_router.include_router(favorites.router)
+api_router.include_router(recommendations.router)
 
 # Health check endpoint
 @api_router.get("/health")

@@ -7,12 +7,21 @@ import { useWallet } from '../contexts/WalletContext';
 
 const LandingPage = () => {
   const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [recommendedProperties, setRecommendedProperties] = useState([]);
+  const [trendingProperties, setTrendingProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { connectWallet, isConnected } = useWallet();
+  const { connectWallet, isConnected, walletAddress } = useWallet();
 
   useEffect(() => {
     loadFeaturedProperties();
+    loadTrendingProperties();
   }, []);
+
+  useEffect(() => {
+    if (isConnected && walletAddress) {
+      loadRecommendedProperties();
+    }
+  }, [isConnected, walletAddress]);
 
   const loadFeaturedProperties = async () => {
     try {
@@ -22,6 +31,24 @@ const LandingPage = () => {
       console.error('Failed to load featured properties:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRecommendedProperties = async () => {
+    try {
+      const response = await api.getRecommendationsForUser(walletAddress, 3);
+      setRecommendedProperties(response.data);
+    } catch (error) {
+      console.error('Failed to load recommendations:', error);
+    }
+  };
+
+  const loadTrendingProperties = async () => {
+    try {
+      const response = await api.getTrendingProperties(3);
+      setTrendingProperties(response.data);
+    } catch (error) {
+      console.error('Failed to load trending properties:', error);
     }
   };
 
@@ -195,6 +222,131 @@ const LandingPage = () => {
           )}
         </div>
       </section>
+
+      {/* Recommended for You - Only show if user is connected */}
+      {isConnected && recommendedProperties.length > 0 && (
+        <section className="py-24 md:py-32 bg-[#FAFAF9]" data-testid="recommended-section">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <div className="flex justify-between items-center mb-12">
+              <div>
+                <h2 className="font-['Outfit'] text-3xl md:text-5xl font-semibold tracking-tight mb-3">
+                  Recommended for You
+                </h2>
+                <p className="text-muted-foreground">
+                  Based on your favorites and investment history
+                </p>
+              </div>
+              <Link to="/marketplace">
+                <Button variant="outline" className="rounded-none">
+                  Explore More
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {recommendedProperties.map((property) => (
+                <Link key={property.id} to={`/property/${property.id}`}>
+                  <div className="group relative overflow-hidden bg-card border-2 border-[#C5A059]/30 hover:border-[#C5A059] transition-all duration-300 rounded-sm cursor-pointer">
+                    <div className="absolute top-4 right-4 z-10 bg-[#C5A059] text-[#181B38] px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-sm">
+                      Recommended
+                    </div>
+                    <div className="aspect-video overflow-hidden">
+                      <img
+                        src={property.images[0]?.url || 'https://via.placeholder.com/400x300'}
+                        alt={property.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                          {property.location.city}
+                        </span>
+                      </div>
+                      <h3 className="font-['Outfit'] text-xl font-medium mb-3">{property.name}</h3>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Yield</span>
+                          <span className="font-['Space_Mono'] font-bold text-[#10B981]">
+                            {property.financials.annual_yield}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Token Price</span>
+                          <span className="font-['Space_Mono'] font-bold">
+                            ${property.token_price}
+                          </span>
+                        </div>
+                      </div>
+                      <Button className="w-full bg-[#181B38] text-white hover:bg-[#181B38]/90 rounded-none">
+                        View Property
+                      </Button>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Trending Properties */}
+      {trendingProperties.length > 0 && (
+        <section className="py-24 md:py-32 bg-white" data-testid="trending-section">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <div className="mb-12">
+              <h2 className="font-['Outfit'] text-3xl md:text-5xl font-semibold tracking-tight mb-3">
+                🔥 Trending Now
+              </h2>
+              <p className="text-muted-foreground">
+                Most popular properties based on recent activity
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {trendingProperties.map((property) => (
+                <Link key={property.id} to={`/property/${property.id}`}>
+                  <div className="group relative overflow-hidden bg-card border border-border/50 hover:border-[#C5A059]/50 transition-colors duration-500 rounded-sm cursor-pointer">
+                    <div className="aspect-video overflow-hidden">
+                      <img
+                        src={property.images[0]?.url || 'https://via.placeholder.com/400x300'}
+                        alt={property.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                          {property.location.city}
+                        </span>
+                      </div>
+                      <h3 className="font-['Outfit'] text-xl font-medium mb-3">{property.name}</h3>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Yield</span>
+                          <span className="font-['Space_Mono'] font-bold text-[#10B981]">
+                            {property.financials.annual_yield}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Token Price</span>
+                          <span className="font-['Space_Mono'] font-bold">
+                            ${property.token_price}
+                          </span>
+                        </div>
+                      </div>
+                      <Button className="w-full bg-[#181B38] text-white hover:bg-[#181B38]/90 rounded-none">
+                        View Property
+                      </Button>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-24 md:py-32 bg-[#181B38] text-white" data-testid="cta-section">
