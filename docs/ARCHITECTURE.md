@@ -174,7 +174,7 @@ Estrategia de migraciones: `prisma migrate dev` en local; `prisma migrate deploy
 | 1 Arquitectura | Este documento, modelo legal, modelo de datos, migraciones, gates regulatorios, dominio financiero | ✅ |
 | 2 Diseño | Design system, home, marketplace, ficha con simulador, dashboard, panel admin | ✅ |
 | 3 Backend | Catálogo, auth + MFA, RBAC, KYC mock + revisión, suscripciones simuladas, pagos mock, ledger, cartera, auditoría, backoffice (propiedades, ciclo de vida de ofertas, ingresos/gastos, distribuciones con four-eyes y retención, usuarios/roles, verificación de la cadena de auditoría) | ✅ |
-| 4 Blockchain | Contratos modelo ERC-3643 (registro de identidad, compliance, token) con 34 tests Foundry en CI ✅; worker de asignación, indexador y despliegue en Base Sepolia pendientes | 🟡 |
+| 4 Blockchain | Contratos modelo ERC-3643 con 34 tests Foundry ✅; puerto de cadena + cadena simulada, worker de asignación con reintentos y conciliación ✅; despliegue en Base Sepolia con custodio pendiente | 🟡 |
 | 5 Integraciones | Adaptadores KYC/pagos/custodia/email/S3 | ⏳ |
-| 6 Testing | Unit (dominio, BD) ✅; integración API contra PostgreSQL ✅ (en CI); contratos ✅; e2e Playwright pendiente | 🟡 |
+| 6 Testing | Unit (dominio, BD), integración API contra PostgreSQL (35), contratos Foundry (34) y e2e Playwright escritorio + móvil (13), todo en CI | ✅ |
 | 7 Despliegue | Docker ✅, CI ✅, IaC AWS, monitorización | 🟡 |
