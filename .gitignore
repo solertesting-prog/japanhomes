@@ -15,3 +15,10 @@ playwright-report/
 test-results/
 .sync/
 packages/contracts/lib/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+**/terraform.tfvars
+**/backend.hcl

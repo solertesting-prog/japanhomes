@@ -162,6 +162,28 @@ jobs:
           STEP_TAIL: "30"
         run: .github/scripts/step.sh "image smoke test" infra/docker/smoke.sh jpt-api:ci jpt-migrate:ci jpt-web:ci
 
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.13.4"
+      - name: Format
+        run: .github/scripts/step.sh "terraform fmt" terraform fmt -check -recursive -diff infra/terraform
+      - name: Validate
+        working-directory: infra/terraform/envs/staging
+        run: |
+          ../../../../.github/scripts/step.sh "terraform init" terraform init -backend=false -input=false
+          ../../../../.github/scripts/step.sh "terraform validate" terraform validate
+      - name: Security scan (Checkov)
+        env:
+          STEP_NOTICE: "1"
+          STEP_TAIL: "80"
+        run: |
+          pip install --quiet checkov
+          .github/scripts/step.sh "checkov" checkov -d infra/terraform --framework terraform --quiet --compact
+
   contracts:
     runs-on: ubuntu-latest
     defaults:
