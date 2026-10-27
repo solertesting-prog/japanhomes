@@ -1,0 +1,70 @@
+name: japan-property-token
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: jpt
+      POSTGRES_PASSWORD: jpt_dev_password
+      POSTGRES_DB: jpt
+    ports: ["54329:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jpt -d jpt"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+
+  # One-shot: apply migrations and seed DEMO data, then exit.
+  migrate:
+    build: { context: ../.., dockerfile: apps/api/Dockerfile, target: build }
+    working_dir: /repo/packages/database
+    command: ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm run seed"]
+    environment:
+      DATABASE_URL: postgresql://jpt:jpt_dev_password@postgres:5432/jpt
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build: { context: ../.., dockerfile: apps/api/Dockerfile }
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://jpt:jpt_dev_password@postgres:5432/jpt
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGINS: http://localhost:3000
+      IP_HASH_SECRET: change-me-change-me-change-me-change-me
+      # Local demo values only. Production secrets come from AWS Secrets Manager / KMS.
+      PII_ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+      KYC_WEBHOOK_SECRET: local-demo-kyc-webhook-secret-change-me
+      PAYMENT_WEBHOOK_SECRET: local-demo-payment-webhook-secret-change
+      APP_URL: http://localhost:3000
+      COOKIE_SECURE: "false"
+      ENABLE_DEV_ENDPOINTS: "false"
+    ports: ["4000:4000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  web:
+    build: { context: ../.., dockerfile: apps/web/Dockerfile }
+    environment:
+      API_URL: http://api:4000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      JPT_DATA_SOURCE: api
+    ports: ["3000:3000"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  redisdata:

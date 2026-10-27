@@ -1,0 +1,30 @@
+{
+  "name": "@jpt/database",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prisma schema, migrations, DB invariants and DEMO seed",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit",
+    "seed": "tsx src/seed.ts",
+    "test:invariants": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f test/invariants.sql",
+    "migrate:check": "prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url \"$SHADOW_DATABASE_URL\" --exit-code",
+    "staff:create": "tsx src/create-staff.ts"
+  },
+  "prisma": {
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@jpt/shared": "workspace:*",
+    "@prisma/client": "^6.16.2"
+  },
+  "devDependencies": {
+    "@jpt/config": "workspace:*",
+    "@types/node": "^22.18.6",
+    "prisma": "^6.16.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3"
+  }
+}
