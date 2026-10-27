@@ -71,6 +71,56 @@ jobs:
       - name: Build
         run: .github/scripts/step.sh build pnpm build
 
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: jpt
+          POSTGRES_PASSWORD: jpt
+          POSTGRES_DB: jpt
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U jpt" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      # Throwaway values for an ephemeral CI database; not secrets.
+      DATABASE_URL: postgresql://jpt:jpt@localhost:5432/jpt
+      IP_HASH_SECRET: e2e-ip-hash-secret-e2e-ip-hash-secret-00
+      PII_ENCRYPTION_KEY: "1111111111111111111111111111111111111111111111111111111111111111"
+      KYC_WEBHOOK_SECRET: e2e-kyc-webhook-secret-0123456789abcdef
+      PAYMENT_WEBHOOK_SECRET: e2e-payment-webhook-secret-0123456789ab
+      API_URL: http://127.0.0.1:4000
+      JPT_DATA_SOURCE: api
+      LOG_LEVEL: warn
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Database (migrate + DEMO seed)
+        working-directory: packages/database
+        run: |
+          pnpm --filter @jpt/shared build
+          pnpm exec prisma generate
+          pnpm exec prisma migrate deploy
+          pnpm run seed
+      - name: Build API and web (web with development helpers)
+        env:
+          NEXT_PUBLIC_DEV_TOOLS: "true"
+          JPT_DATA_SOURCE: demo
+        run: .github/scripts/step.sh build pnpm build
+      - name: Browsers
+        run: pnpm --filter @jpt/web exec playwright install --with-deps chromium
+      - name: End-to-end tests
+        env:
+          STEP_NOTICE: "1"
+          STEP_TAIL: "40"
+        run: .github/scripts/step.sh "e2e" pnpm --filter @jpt/web test:e2e
+
   contracts:
     runs-on: ubuntu-latest
     defaults:

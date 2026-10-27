@@ -134,7 +134,7 @@ const appEn = {
     failed: 'The payment failed. You can cancel the order or try paying again.',
     doneTitle: 'Investment confirmed',
     doneBody: (tokens: string, name: string) => `${tokens} tokens of ${name} are recorded in the investor register.`,
-    allocationNote: 'On-chain issuance follows in a later phase; your holding is already recorded.',
+    allocationNote: 'Your holding is already recorded. The tokens are issued to your custodial wallet shortly; your dashboard shows when they are on-chain.',
     toDashboard: 'Go to your dashboard',
     receiptSent: 'A receipt was sent to your email.',
   },

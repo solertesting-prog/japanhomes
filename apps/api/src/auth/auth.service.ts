@@ -12,7 +12,7 @@ import type { Response } from 'express';
 import { AuditService } from '../audit/audit.service';
 import { CryptoService } from '../common/crypto.service';
 import { type AppRequest, type AuthContext, requestMeta } from '../common/request-context';
-import { generateTotpSecret, otpauthUri, verifyTotp } from '../common/totp';
+import { generateTotpSecret, matchTotpStep, otpauthUri } from '../common/totp';
 import { APP_ENV, type AppEnv } from '../config/env';
 import { Mailer } from '../mail/mailer.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -213,7 +213,7 @@ export class AuthService {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: auth.userId } });
     if (user.mfaEnabled) throw new ConflictException({ code: 'MFA_ALREADY_ENABLED', message: 'Two-factor authentication is already on' });
     if (!user.mfaSecretEnc) throw new BadRequestException({ code: 'MFA_NOT_SET_UP', message: 'Start two-factor setup first' });
-    if (!verifyTotp(this.crypto.decrypt(user.mfaSecretEnc), code)) {
+    if (!(await this.consumeTotp(user.id, this.crypto.decrypt(user.mfaSecretEnc), code))) {
       throw new BadRequestException({ code: 'MFA_CODE_INVALID', message: 'That code is not valid. Check your device clock and try again.' });
     }
     const meta = requestMeta(req);
@@ -236,7 +236,7 @@ export class AuthService {
   async mfaVerify(auth: AuthContext, code: string, req: AppRequest, res: Response): Promise<MeDto> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: auth.userId } });
     if (!user.mfaEnabled || !user.mfaSecretEnc) return this.me(user.id, false);
-    if (!verifyTotp(this.crypto.decrypt(user.mfaSecretEnc), code)) {
+    if (!(await this.consumeTotp(user.id, this.crypto.decrypt(user.mfaSecretEnc), code))) {
       await this.registerFailure(user.id, user.email, user.failedLoginCount, req);
       const after = await this.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
       if (after.lockedUntil && after.lockedUntil > new Date()) await this.sessions.revoke(auth.sessionId, res);
@@ -245,6 +245,21 @@ export class AuthService {
     await this.prisma.user.update({ where: { id: user.id }, data: { failedLoginCount: 0 } });
     await this.sessions.markMfaVerified(auth.sessionId);
     return this.me(user.id, false);
+  }
+
+  /**
+   * Accepts a TOTP code at most once: the matched time step must be newer than
+   * the last one used, and claiming it is atomic so two concurrent requests
+   * with the same code cannot both pass.
+   */
+  private async consumeTotp(userId: string, secret: string, code: string): Promise<boolean> {
+    const step = matchTotpStep(secret, code);
+    if (step === null) return false;
+    const claimed = await this.prisma.user.updateMany({
+      where: { id: userId, OR: [{ mfaLastUsedStep: null }, { mfaLastUsedStep: { lt: BigInt(step) } }] },
+      data: { mfaLastUsedStep: BigInt(step) },
+    });
+    return claimed.count === 1;
   }
 
   /* Password reset ------------------------------------------------------- */

@@ -403,6 +403,8 @@ model User {
   mfaEnabled        Boolean    @default(false)
   /// TOTP secret, encrypted.
   mfaSecretEnc      Bytes?
+  /// Last accepted TOTP time step: a code is accepted once (RFC 6238 §5.2).
+  mfaLastUsedStep   BigInt?
   failedLoginCount  Int        @default(0)
   lockedUntil       DateTime?  @db.Timestamptz(3)
   lastLoginAt       DateTime?  @db.Timestamptz(3)

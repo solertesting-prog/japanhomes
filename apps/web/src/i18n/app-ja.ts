@@ -135,7 +135,7 @@ const appJa: AppDictionary = {
     failed: 'お支払いに失敗しました。申込を取り消すか、再度お支払いください。',
     doneTitle: '投資が確定しました',
     doneBody: (tokens, name) => `${name} のトークン${tokens}口が投資家名簿に記録されました。`,
-    allocationNote: 'ブロックチェーン上の発行は今後のフェーズで行います。保有はすでに記録されています。',
+    allocationNote: '保有はすでに記録されています。トークンはまもなくカストディウォレットに発行され、ダッシュボードでオンチェーン状況を確認できます。',
     toDashboard: 'ダッシュボードへ',
     receiptSent: '受領書をメールでお送りしました。',
   },

@@ -121,7 +121,8 @@ describe('CSRF, RBAC and MFA', () => {
     const setup = await c.post('/v1/auth/mfa/setup');
     expect(setup.body.otpauthUri.startsWith('otpauth://totp/')).toBe(true);
     expect((await c.post('/v1/auth/mfa/enable', { code: '000000' })).status).toBe(400);
-    expect((await c.post('/v1/auth/mfa/enable', { code: totpAt(setup.body.secret, Date.now()) })).status).toBe(204);
+    const enableCode = totpAt(setup.body.secret, Date.now());
+    expect((await c.post('/v1/auth/mfa/enable', { code: enableCode })).status).toBe(204);
 
     const stored = await prisma.user.findUniqueOrThrow({ where: { email } });
     expect(Buffer.from(stored.mfaSecretEnc!).toString('utf8').includes(setup.body.secret)).toBe(false);
@@ -130,7 +131,10 @@ describe('CSRF, RBAC and MFA', () => {
     const login = await c2.post('/v1/auth/login', { email, password: PASSWORD });
     expect(login.body.mfaPending).toBe(true);
     expect((await c2.get('/v1/kyc')).body.code).toBe('MFA_REQUIRED');
-    const verified = await c2.post('/v1/auth/mfa/verify', { code: totpAt(setup.body.secret, Date.now()) });
+    // A code is accepted once: replaying the one used to enable MFA fails.
+    expect((await c2.post('/v1/auth/mfa/verify', { code: enableCode })).body.code).toBe('MFA_CODE_INVALID');
+    // The next time step (inside the ±1 drift window) is accepted.
+    const verified = await c2.post('/v1/auth/mfa/verify', { code: totpAt(setup.body.secret, Date.now() + 30_000) });
     expect(verified.body.mfaPending).toBe(false);
     expect((await c2.get('/v1/kyc')).status).toBe(200);
   });

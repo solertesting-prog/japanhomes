@@ -135,7 +135,7 @@ const appEs: AppDictionary = {
     failed: 'El pago ha fallado. Puedes cancelar la orden o volver a pagar.',
     doneTitle: 'Inversión confirmada',
     doneBody: (tokens, name) => `${tokens} tokens de ${name} constan en el registro de inversores.`,
-    allocationNote: 'La emisión en blockchain llega en una fase posterior; tu participación ya está registrada.',
+    allocationNote: 'Tu participación ya está registrada. Los tokens se emiten en breve a tu cartera custodiada; tu panel muestra cuándo están on-chain.',
     toDashboard: 'Ir a tu panel',
     receiptSent: 'Te hemos enviado el justificante por email.',
   },

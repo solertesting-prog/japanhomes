@@ -54,8 +54,20 @@ export function totpAt(secretBase32: string, timeMs: number, stepSeconds = 30): 
 
 /** Accepts the current step and one step either side for clock drift. */
 export function verifyTotp(secretBase32: string, code: string, nowMs = Date.now()): boolean {
-  if (!/^\d{6}$/.test(code)) return false;
-  return [-1, 0, 1].some((w) => totpAt(secretBase32, nowMs + w * 30_000) === code);
+  return matchTotpStep(secretBase32, code, nowMs) !== null;
+}
+
+/**
+ * The time step a code belongs to (current ±1 for clock drift), or null.
+ * Callers persist the step so the same code cannot be replayed.
+ */
+export function matchTotpStep(secretBase32: string, code: string, nowMs = Date.now(), stepSeconds = 30): number | null {
+  if (!/^\d{6}$/.test(code)) return null;
+  const current = Math.floor(nowMs / 1000 / stepSeconds);
+  for (const w of [0, -1, 1]) {
+    if (totpAt(secretBase32, (current + w) * stepSeconds * 1000) === code) return current + w;
+  }
+  return null;
 }
 
 export function otpauthUri(secretBase32: string, account: string, issuer = 'Japan Property Token'): string {
