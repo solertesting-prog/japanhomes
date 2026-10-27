@@ -121,6 +121,47 @@ jobs:
           STEP_TAIL: "40"
         run: .github/scripts/step.sh "e2e" pnpm --filter @jpt/web test:e2e
 
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: runtime
+          tags: jpt-api:ci
+          load: true
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Migration image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: migrate
+          tags: jpt-migrate:ci
+          load: true
+          cache-from: type=gha,scope=api
+      - name: Web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          target: runtime
+          tags: jpt-web:ci
+          load: true
+          build-args: API_URL=http://api:4000
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+      - name: Smoke test (production mode)
+        env:
+          STEP_NOTICE: "1"
+          STEP_TAIL: "30"
+        run: .github/scripts/step.sh "image smoke test" infra/docker/smoke.sh jpt-api:ci jpt-migrate:ci jpt-web:ci
+
   contracts:
     runs-on: ubuntu-latest
     defaults:

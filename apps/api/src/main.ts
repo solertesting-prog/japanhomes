@@ -18,7 +18,7 @@ async function bootstrap() {
   const env = app.get<AppEnv>(APP_ENV);
 
   app.useLogger(app.get(Logger));
-  app.set('trust proxy', 1);
+  app.set('trust proxy', env.TRUST_PROXY_HOPS);
   app.disable('x-powered-by');
   app.use(
     helmet({

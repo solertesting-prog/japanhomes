@@ -29,6 +29,8 @@ const envSchema = z
     ENABLE_DEV_ENDPOINTS: z.enum(['true', 'false']).optional(),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(10).default(120),
+    /** Reverse proxies in front of the API (AWS: ALB → web proxy → API = 2). */
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
     /** Where tokens are issued. Only the in-process simulated chain exists so far. */
     CHAIN_GATEWAY: z.enum(['simulated']).default('simulated'),
     /** Blocks a mint must be buried under before it counts as final. */

@@ -32,4 +32,20 @@ export function loadDotenv(candidates = [resolve(process.cwd(), '.env'), resolve
   }
 }
 
+/**
+ * On AWS the database password lives in the RDS-managed secret and reaches the
+ * task as DB_PASSWORD; the connection URL is assembled here so the secret is
+ * never written into task definitions or images.
+ */
+export function composeDatabaseUrl(env: NodeJS.ProcessEnv = process.env): void {
+  if (env.DATABASE_URL || !env.DB_HOST || !env.DB_USER || !env.DB_PASSWORD) return;
+  const user = encodeURIComponent(env.DB_USER);
+  const password = encodeURIComponent(env.DB_PASSWORD);
+  const port = env.DB_PORT ?? '5432';
+  const name = encodeURIComponent(env.DB_NAME ?? 'jpt');
+  const ssl = env.DB_SSLMODE ?? 'require';
+  env.DATABASE_URL = `postgresql://${user}:${password}@${env.DB_HOST}:${port}/${name}?sslmode=${ssl}`;
+}
+
 loadDotenv();
+composeDatabaseUrl();
