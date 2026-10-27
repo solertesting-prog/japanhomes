@@ -45,26 +45,27 @@ jobs:
       - name: Migrate, check drift, test DB invariants, seed
         working-directory: packages/database
         run: |
+          S=../../.github/scripts/step.sh
           psql "postgresql://jpt:jpt@localhost:5432/jpt" -c "CREATE DATABASE jpt_shadow"
-          pnpm exec prisma generate
-          pnpm exec prisma migrate deploy
-          pnpm run migrate:check
-          pnpm run test:invariants
-          pnpm run seed
+          $S "prisma generate" pnpm exec prisma generate
+          $S "migrate deploy" pnpm exec prisma migrate deploy
+          $S "migration drift" pnpm run migrate:check
+          $S "DB invariants" pnpm run test:invariants
+          $S "seed" pnpm run seed
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: .github/scripts/step.sh typecheck pnpm typecheck
 
       - name: API tests
-        run: pnpm --filter @jpt/api test
+        run: .github/scripts/step.sh "API unit tests" pnpm --filter @jpt/api test
 
       - name: API integration tests (real PostgreSQL)
         env:
           TEST_DATABASE_URL: ${{ env.DATABASE_URL }}
-        run: pnpm --filter @jpt/api test:int
+        run: .github/scripts/step.sh "API integration tests" pnpm --filter @jpt/api test:int
 
       - name: Build
-        run: pnpm build
+        run: .github/scripts/step.sh build pnpm build
 
   security:
     runs-on: ubuntu-latest
@@ -77,7 +78,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Dependency audit
-        run: pnpm audit --prod --audit-level high
+        run: .github/scripts/step.sh "dependency audit" pnpm audit --prod --audit-level high
       - name: Secret scan
         uses: gitleaks/gitleaks-action@v2
         env:
