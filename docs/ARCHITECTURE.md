@@ -111,7 +111,7 @@ Decisión:
 | `eligibility` | motor de reglas por jurisdicción versionado | 3 |
 | `subscriptions` | máquina de estados, idempotencia, reservas de tokens | 3 |
 | `payments` | puerto `PaymentProvider`, webhooks firmados, ledger | 3/5 |
-| `allocations` | cola de minteo, reintentos, conciliación on-chain | 4 |
+| `allocations` | cola de minteo, reintentos, conciliación on-chain | 4 (contratos ✅, worker pendiente) |
 | `distributions` | cálculo pro-rata exacto, snapshot, aprobación four-eyes | 3 |
 | `documents` | subida, hash, URLs firmadas, control por nivel de acceso | 3 |
 | `admin` / `audit` | panel, audit log encadenado por hash | 3 |
@@ -174,7 +174,7 @@ Estrategia de migraciones: `prisma migrate dev` en local; `prisma migrate deploy
 | 1 Arquitectura | Este documento, modelo legal, modelo de datos, migraciones, gates regulatorios, dominio financiero | ✅ |
 | 2 Diseño | Design system, home, marketplace, ficha con simulador, dashboard, panel admin | ✅ |
 | 3 Backend | Catálogo, auth + MFA, RBAC, KYC mock + revisión, suscripciones simuladas, pagos mock, ledger, cartera, auditoría, backoffice (propiedades, ciclo de vida de ofertas, ingresos/gastos, distribuciones con four-eyes y retención, usuarios/roles, verificación de la cadena de auditoría) | ✅ |
-| 4 Blockchain | ERC-3643 + Foundry + indexador, testnet | ⏳ |
+| 4 Blockchain | Contratos modelo ERC-3643 (registro de identidad, compliance, token) con 34 tests Foundry en CI ✅; worker de asignación, indexador y despliegue en Base Sepolia pendientes | 🟡 |
 | 5 Integraciones | Adaptadores KYC/pagos/custodia/email/S3 | ⏳ |
-| 6 Testing | Unit (dominio, BD) ✅; integración API contra PostgreSQL ✅ (22); e2e Playwright pendiente | 🟡 |
+| 6 Testing | Unit (dominio, BD) ✅; integración API contra PostgreSQL ✅ (en CI); contratos ✅; e2e Playwright pendiente | 🟡 |
 | 7 Despliegue | Docker ✅, CI ✅, IaC AWS, monitorización | 🟡 |

@@ -64,6 +64,8 @@ jobs:
       - name: API integration tests (real PostgreSQL)
         env:
           TEST_DATABASE_URL: ${{ env.DATABASE_URL }}
+          STEP_NOTICE: "1"
+          STEP_TAIL: "12"
         run: .github/scripts/step.sh "API integration tests" pnpm --filter @jpt/api test:int
 
       - name: Build
