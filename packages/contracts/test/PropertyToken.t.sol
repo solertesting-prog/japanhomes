@@ -332,12 +332,12 @@ contract PropertyTokenTest is BaseTest {
     // --- fuzz ---------------------------------------------------------------
 
     function testFuzz_investorAccountingMatchesBalances(uint96 a, uint96 b, uint96 moved) public {
-        uint256 amountA = bound(a, 1, SUPPLY / 2);
-        uint256 amountB = bound(b, 1, SUPPLY / 2);
+        uint256 amountA = _bound(a, 1, SUPPLY / 2);
+        uint256 amountB = _bound(b, 1, SUPPLY / 2);
         _mint(alice, amountA);
         _mint(bob, amountB);
         _enableTransfers();
-        uint256 m = bound(moved, 0, amountA);
+        uint256 m = _bound(moved, 0, amountA);
         vm.prank(alice);
         token.transfer(bob, m);
 

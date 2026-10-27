@@ -23,35 +23,35 @@ contract Handler is Test {
     }
 
     function mint(uint256 to, uint256 amount) external {
-        amount = bound(amount, 0, 500);
+        amount = _bound(amount, 0, 500);
         vm.prank(agent);
         try token.mint(_w(to), amount) {} catch {}
     }
 
     function transfer(uint256 from, uint256 to, uint256 amount) external {
         address f = _w(from);
-        amount = bound(amount, 0, token.balanceOf(f));
+        amount = _bound(amount, 0, token.balanceOf(f));
         vm.prank(f);
         try token.transfer(_w(to), amount) {} catch {}
     }
 
     function forced(uint256 from, uint256 to, uint256 amount) external {
         address f = _w(from);
-        amount = bound(amount, 0, token.balanceOf(f));
+        amount = _bound(amount, 0, token.balanceOf(f));
         vm.prank(agent);
         try token.forcedTransfer(f, _w(to), amount) {} catch {}
     }
 
     function burn(uint256 from, uint256 amount) external {
         address f = _w(from);
-        amount = bound(amount, 0, token.balanceOf(f));
+        amount = _bound(amount, 0, token.balanceOf(f));
         vm.prank(agent);
         try token.burn(f, amount) {} catch {}
     }
 
     function freeze(uint256 who, uint256 amount) external {
         address w = _w(who);
-        amount = bound(amount, 0, token.balanceOf(w));
+        amount = _bound(amount, 0, token.balanceOf(w));
         vm.prank(agent);
         try token.freezePartialTokens(w, amount) {} catch {}
     }

@@ -89,6 +89,11 @@ jobs:
           STEP_NOTICE: "1"
           STEP_TAIL: "40"
         run: ../../.github/scripts/step.sh "forge test" forge test -vv --summary
+      - name: List of passing tests
+        if: success()
+        run: |
+          forge test 2>&1 | grep -E "^\[(PASS|FAIL)" | sed -e 's/ (runs.*//' -e 's/ (gas.*//' > results.txt
+          echo "::notice title=forge tests ($(wc -l < results.txt))::$(sed -e 's/%/%25/g' results.txt | awk 'BEGIN{ORS="%0A"} {print}')"
 
   security:
     runs-on: ubuntu-latest
