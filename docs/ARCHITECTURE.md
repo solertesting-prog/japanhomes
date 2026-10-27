@@ -177,4 +177,4 @@ Estrategia de migraciones: `prisma migrate dev` en local; `prisma migrate deploy
 | 4 Blockchain | Contratos modelo ERC-3643 con 34 tests Foundry ✅; puerto de cadena + cadena simulada, worker de asignación con reintentos y conciliación ✅; despliegue en Base Sepolia con custodio pendiente | 🟡 |
 | 5 Integraciones | Adaptadores KYC/pagos/custodia/email/S3 | ⏳ |
 | 6 Testing | Unit (dominio, BD), integración API contra PostgreSQL (35), contratos Foundry (34) y e2e Playwright escritorio + móvil (13), todo en CI | ✅ |
-| 7 Despliegue | Docker ✅, CI ✅, IaC AWS, monitorización | 🟡 |
+| 7 Despliegue | Imágenes probadas en modo producción ✅, CI ✅, Terraform AWS (VPC, ALB+WAF, ECS, RDS, KMS, S3, ECR, alarmas) validado y con Checkov sin fallos ✅, workflow de despliegue por OIDC ✅; primer `apply` en una cuenta real pendiente (ver docs/DEPLOYMENT.md) | 🟡 |
