@@ -1,6 +1,10 @@
 # --- access logs (ALB + S3 server access logs) ----------------------------------
 # ALB log delivery only supports SSE-S3, so this bucket uses AES256.
 resource "aws_s3_bucket" "logs" {
+  #checkov:skip=CKV_AWS_145:ALB access log delivery only supports SSE-S3 (AES256).
+  #checkov:skip=CKV_AWS_18:This is the access-log bucket itself.
+  #checkov:skip=CKV2_AWS_62:No consumer for object events yet.
+  #checkov:skip=CKV_AWS_144:Single-region deployment; cross-region replication is a production decision (see docs/DEPLOYMENT.md).
   bucket        = "${var.name}-logs-${local.account_id}"
   force_destroy = !local.production
   tags          = local.tags
@@ -92,6 +96,8 @@ resource "aws_s3_bucket_policy" "logs" {
 # Private, versioned, KMS-encrypted; served to users only through short-lived
 # presigned URLs created by the API after its access checks.
 resource "aws_s3_bucket" "documents" {
+  #checkov:skip=CKV2_AWS_62:No consumer for object events yet.
+  #checkov:skip=CKV_AWS_144:Single-region deployment; cross-region replication is a production decision (see docs/DEPLOYMENT.md).
   bucket = "${var.name}-documents-${local.account_id}"
   tags   = local.tags
 }

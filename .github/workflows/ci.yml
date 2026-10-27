@@ -182,7 +182,13 @@ jobs:
           STEP_TAIL: "80"
         run: |
           pip install --quiet checkov
-          .github/scripts/step.sh "checkov" checkov -d infra/terraform --framework terraform --quiet --compact
+          checkov -d infra/terraform --framework terraform --quiet -o json > checkov.json || true
+          jq -r '[.] | flatten | .[].results.failed_checks[]? | "\(.check_id) \(.resource) \(.file_path):\(.file_line_range[0])"' checkov.json | sort -u > failed.txt
+          if [ -s failed.txt ]; then
+            echo "::error title=checkov ($(wc -l < failed.txt) failed)::$(sed -e 's/%/%25/g' failed.txt | awk 'BEGIN{ORS="%0A"} {print}')"
+            exit 1
+          fi
+          echo "::notice title=checkov::$(jq -r '[.] | flatten | .[0].summary | "passed \(.passed), failed \(.failed), skipped \(.skipped)"' checkov.json)"
 
   contracts:
     runs-on: ubuntu-latest

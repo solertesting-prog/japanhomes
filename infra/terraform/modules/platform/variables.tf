@@ -104,8 +104,13 @@ variable "alarm_email" {
 }
 
 variable "log_retention_days" {
-  type    = number
-  default = 90
+  description = "CloudWatch retention. One year minimum: audit and incident investigation."
+  type        = number
+  default     = 365
+  validation {
+    condition     = var.log_retention_days >= 365
+    error_message = "Keep logs at least 365 days."
+  }
 }
 
 variable "tags" {

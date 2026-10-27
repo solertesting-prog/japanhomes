@@ -17,6 +17,7 @@ resource "aws_vpc_security_group_ingress_rule" "alb_https" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "alb_http" {
+  #checkov:skip=CKV_AWS_260:Port 80 only answers a permanent redirect to HTTPS (see aws_lb_listener.http).
   for_each          = toset(var.allowed_ingress_cidrs)
   security_group_id = aws_security_group.alb.id
   description       = "HTTP, redirected to HTTPS"

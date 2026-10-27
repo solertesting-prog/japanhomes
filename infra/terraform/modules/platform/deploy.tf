@@ -31,6 +31,8 @@ resource "aws_iam_role" "deploy" {
 }
 
 resource "aws_iam_role_policy" "deploy" {
+  #checkov:skip=CKV_AWS_355:ecr:GetAuthorizationToken and the ECS describe/register actions do not support resource-level permissions; mutating ECS actions are scoped to the cluster by condition.
+  #checkov:skip=CKV_AWS_290:Same as above: only unrestrictable actions use "*".
   count = var.github_repository != null ? 1 : 0
   name  = "release"
   role  = aws_iam_role.deploy[0].id

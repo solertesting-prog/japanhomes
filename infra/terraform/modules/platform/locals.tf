@@ -1,5 +1,10 @@
 data "aws_availability_zones" "available" {
+  #checkov:skip=CKV_AWS_394:Only the first az_count zones are used (slice in locals), so new zones never change the layout.
   state = "available"
+  filter {
+    name   = "opt-in-status"
+    values = ["opt-in-not-required"]
+  }
 }
 
 data "aws_caller_identity" "current" {}

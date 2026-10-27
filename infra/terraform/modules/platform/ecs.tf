@@ -205,6 +205,7 @@ resource "aws_ecs_task_definition" "api" {
 }
 
 resource "aws_ecs_task_definition" "web" {
+  #checkov:skip=CKV_AWS_336:Next.js writes its incremental cache under .next/cache; Fargate offers no tmpfs mount.
   family                   = "${var.name}-web"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
@@ -236,6 +237,7 @@ resource "aws_ecs_task_definition" "web" {
 
 # Run once per release before updating the services (see deploy workflow).
 resource "aws_ecs_task_definition" "migrate" {
+  #checkov:skip=CKV_AWS_336:Short-lived one-off task; npx writes its cache and logs under the home directory.
   family                   = "${var.name}-migrate"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
