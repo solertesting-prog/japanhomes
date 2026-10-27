@@ -1,4 +1,5 @@
 resource "aws_lb" "this" {
+  #checkov:skip=CKV2_AWS_76:The attached web ACL (aws_wafv2_web_acl_association.this) includes AWSManagedRulesKnownBadInputsRuleSet, which carries the Log4JRCE rules; Checkov does not resolve the association.
   name                       = var.name
   load_balancer_type         = "application"
   internal                   = false
