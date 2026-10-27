@@ -31,7 +31,11 @@ RUN pnpm --filter @jpt/web... build
 FROM node:22-alpine AS runtime
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 JPT_DATA_SOURCE=api
+ARG API_URL=http://127.0.0.1:4000
+ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# Server components read API_URL at runtime too; ECS may override it.
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 JPT_DATA_SOURCE=api \
+    API_URL=$API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 COPY --from=build --chown=app:app /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=app:app /repo/apps/web/.next/static ./apps/web/.next/static
 USER app

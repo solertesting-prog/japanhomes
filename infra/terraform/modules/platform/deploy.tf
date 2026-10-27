@@ -53,9 +53,9 @@ resource "aws_iam_role_policy" "deploy" {
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = ["ecs:UpdateService", "ecs:RunTask"]
-        Resource = "*"
+        Effect    = "Allow"
+        Action    = ["ecs:UpdateService", "ecs:RunTask"]
+        Resource  = "*"
         Condition = { ArnEquals = { "ecs:cluster" = aws_ecs_cluster.this.arn } }
       },
       {
