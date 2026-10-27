@@ -16,6 +16,9 @@ export function AccountView() {
   const { me, ready } = useRequireSession();
   const { signOut, refresh } = useSession();
   const router = useRouter();
+  // Kept here, not in <MfaSetup>: once MFA is on, the session refresh unmounts
+  // the setup form and its own success message would vanish with it.
+  const [mfaJustEnabled, setMfaJustEnabled] = useState(false);
   if (!ready || !me) return <PageSpinner />;
   const [kycLabel] = t.app.kyc.status[me.kycStatus] ?? [me.kycStatus];
 
@@ -54,7 +57,19 @@ export function AccountView() {
       <section className="mt-10 border-t border-line pt-8">
         <h2 className="text-lg font-medium text-ink">{ac.security}</h2>
         <p className="mt-2 text-sm text-ink-2">{me.mfaEnabled ? ac.mfaOn : ac.mfaOff}</p>
-        {!me.mfaEnabled && <MfaSetup onEnabled={refresh} />}
+        {mfaJustEnabled && (
+          <div className="mt-4">
+            <Notice tone="success">{ac.mfaEnabled}</Notice>
+          </div>
+        )}
+        {!me.mfaEnabled && (
+          <MfaSetup
+            onEnabled={async () => {
+              setMfaJustEnabled(true);
+              await refresh();
+            }}
+          />
+        )}
       </section>
 
       <section className="mt-10 border-t border-line pt-8">
@@ -114,7 +129,7 @@ function MfaSetup({ onEnabled }: { onEnabled: () => Promise<unknown> }) {
     }
   }
 
-  if (done) return <div className="mt-4"><Notice tone="success">{ac.mfaEnabled}</Notice></div>;
+  if (done) return null;
 
   return (
     <div className="mt-5 space-y-5">
