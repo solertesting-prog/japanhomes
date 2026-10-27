@@ -23,6 +23,7 @@ interface Portfolio {
     distributionsReceived: string;
     projectedAnnualDistribution: string;
     offeringStatus: string;
+    onChain: { mintedTokens: string; pendingTokens: string; network: string | null; wallet: string | null };
   }>;
 }
 
@@ -132,7 +133,17 @@ export function DashboardView() {
                           {h.property.isDemo && ' — DEMO'}
                         </span>
                       </td>
-                      <td className="num py-3 text-right text-ink">{f.int(h.tokens)}</td>
+                      <td className="num py-3 text-right text-ink">
+                        {f.int(h.tokens)}
+                        {h.onChain.mintedTokens !== '0' && (
+                          <span className="block text-xs font-normal text-ink-3" title={h.onChain.wallet ?? undefined}>
+                            {d.onChainMinted.replace('{n}', f.int(h.onChain.mintedTokens)).replace('{network}', h.onChain.network ?? '—')}
+                          </span>
+                        )}
+                        {h.onChain.pendingTokens !== '0' && (
+                          <span className="block text-xs font-normal text-ink-3">{d.onChainPending.replace('{n}', f.int(h.onChain.pendingTokens))}</span>
+                        )}
+                      </td>
                       <td className="num py-3 text-right text-ink">{f.ppm(h.ownershipPpm)}</td>
                       <td className="num py-3 text-right text-ink">{f.yen(h.investedAmount)}</td>
                       <td className="num py-3 text-right text-ink">{f.yen(h.distributionsReceived)}</td>

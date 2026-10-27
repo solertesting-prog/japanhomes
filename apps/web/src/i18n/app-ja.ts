@@ -155,6 +155,8 @@ const appJa: AppDictionary = {
     investedCol: '投資額',
     receivedCol: '受取額',
     status: '募集',
+    onChainMinted: 'トークン台帳に{n}（{network}）',
+    onChainPending: '発行待ち{n}',
     byCity: '都市別',
     transactions: '取引履歴',
     downloadCsv: 'CSVをダウンロード',

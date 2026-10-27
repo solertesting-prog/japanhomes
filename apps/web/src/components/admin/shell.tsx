@@ -16,6 +16,7 @@ const SECTIONS = [
   { key: 'kyc', href: '/admin/kyc', perm: 'kyc:review' },
   { key: 'properties', href: '/admin/properties', perm: 'property:read' },
   { key: 'distributions', href: '/admin/distributions', perm: 'distribution:prepare' },
+  { key: 'chain', href: '/admin/chain', perm: 'token:operate' },
   { key: 'users', href: '/admin/users', perm: 'user:read' },
   { key: 'audit', href: '/admin/audit', perm: 'audit:read' },
 ] as const;

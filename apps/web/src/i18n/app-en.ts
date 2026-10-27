@@ -154,6 +154,8 @@ const appEn = {
     investedCol: 'Invested',
     receivedCol: 'Received',
     status: 'Round',
+    onChainMinted: '{n} in the token register ({network})',
+    onChainPending: '{n} awaiting issuance',
     byCity: 'By city',
     transactions: 'Transactions',
     downloadCsv: 'Download CSV',

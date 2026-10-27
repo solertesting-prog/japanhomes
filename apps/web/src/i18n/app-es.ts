@@ -155,6 +155,8 @@ const appEs: AppDictionary = {
     investedCol: 'Invertido',
     receivedCol: 'Recibido',
     status: 'Ronda',
+    onChainMinted: '{n} en el registro de tokens ({network})',
+    onChainPending: '{n} pendientes de emisión',
     byCity: 'Por ciudad',
     transactions: 'Movimientos',
     downloadCsv: 'Descargar CSV',
