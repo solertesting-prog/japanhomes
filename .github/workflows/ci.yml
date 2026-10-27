@@ -69,6 +69,27 @@ jobs:
       - name: Build
         run: .github/scripts/step.sh build pnpm build
 
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Dependencies (pinned tags)
+        run: sh scripts/deps.sh
+      - name: Build with contract sizes
+        run: ../../.github/scripts/step.sh "forge build" forge build --sizes
+      - name: Unit, fuzz and invariant tests
+        env:
+          FOUNDRY_PROFILE: ci
+          STEP_NOTICE: "1"
+          STEP_TAIL: "40"
+        run: ../../.github/scripts/step.sh "forge test" forge test -vv --summary
+
   security:
     runs-on: ubuntu-latest
     steps:
