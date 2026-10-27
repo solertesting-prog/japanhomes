@@ -1,0 +1,85 @@
+name: Deploy
+
+# Manual release to an AWS environment created with infra/terraform.
+# Requires a GitHub environment (e.g. "staging") with protection rules and
+# these variables (no stored AWS keys — OIDC):
+#   AWS_REGION, AWS_DEPLOY_ROLE_ARN, ENV_NAME (jpt-staging), ECR_REGISTRY,
+#   SITE_URL, WEB_API_URL, TASK_SUBNETS (comma-separated), API_SG
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [staging]
+        default: staging
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-buildx-action@v3
+
+      - name: API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: runtime
+          push: true
+          tags: ${{ vars.ECR_REGISTRY }}/${{ vars.ENV_NAME }}/api:${{ env.TAG }}
+          cache-from: type=gha,scope=api
+      - name: Migration image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: migrate
+          push: true
+          tags: ${{ vars.ECR_REGISTRY }}/${{ vars.ENV_NAME }}/api:migrate-${{ env.TAG }}
+          cache-from: type=gha,scope=api
+      - name: Web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          target: runtime
+          push: true
+          tags: ${{ vars.ECR_REGISTRY }}/${{ vars.ENV_NAME }}/web:${{ env.TAG }}
+          build-args: |
+            API_URL=${{ vars.WEB_API_URL }}
+            NEXT_PUBLIC_SITE_URL=${{ vars.SITE_URL }}
+          cache-from: type=gha,scope=web
+
+      - name: Migrate, then roll out API and web
+        env:
+          CLUSTER: ${{ vars.ENV_NAME }}
+          ENV_NAME: ${{ vars.ENV_NAME }}
+          API_IMAGE: ${{ vars.ECR_REGISTRY }}/${{ vars.ENV_NAME }}/api:${{ env.TAG }}
+          MIGRATE_IMAGE: ${{ vars.ECR_REGISTRY }}/${{ vars.ENV_NAME }}/api:migrate-${{ env.TAG }}
+          WEB_IMAGE: ${{ vars.ECR_REGISTRY }}/${{ vars.ENV_NAME }}/web:${{ env.TAG }}
+          TASK_SUBNETS: ${{ vars.TASK_SUBNETS }}
+          API_SG: ${{ vars.API_SG }}
+        run: infra/deploy/release.sh
+
+      - name: Smoke check
+        run: |
+          curl -fsS "${{ vars.SITE_URL }}/" | grep -q 'Japan Property Token'
+          curl -fsS "${{ vars.SITE_URL }}/api/v1/regulatory/modules" | grep -q 'SECONDARY_MARKET'

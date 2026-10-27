@@ -176,6 +176,8 @@ jobs:
         run: |
           ../../../../.github/scripts/step.sh "terraform init" terraform init -backend=false -input=false
           ../../../../.github/scripts/step.sh "terraform validate" terraform validate
+      - name: Shell scripts
+        run: shellcheck infra/docker/*.sh infra/deploy/*.sh .github/scripts/*.sh packages/contracts/scripts/*.sh
       - name: Security scan (Checkov)
         env:
           STEP_NOTICE: "1"

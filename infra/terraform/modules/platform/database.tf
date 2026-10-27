@@ -80,6 +80,7 @@ resource "aws_db_instance" "this" {
 # once by an operator (see docs/DEPLOYMENT.md) so they never enter state:
 #   {"IP_HASH_SECRET": "...", "PII_ENCRYPTION_KEY": "...", "KYC_WEBHOOK_SECRET": "...", "PAYMENT_WEBHOOK_SECRET": "..."}
 resource "aws_secretsmanager_secret" "app" {
+  #checkov:skip=CKV2_AWS_57:Rotating these needs coordinated steps (re-encrypting PII under a new key version, changing webhook secrets with each provider); runbook in docs/DEPLOYMENT.md.
   name                    = "${var.name}/app"
   description             = "Japan Property Token API secrets"
   kms_key_id              = aws_kms_key.main.arn
