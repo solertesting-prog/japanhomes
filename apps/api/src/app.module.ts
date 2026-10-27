@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
+import { ChainModule } from './chain/chain.module';
 import { AuthGuard, CsrfGuard } from './auth/guards';
 import { CommonModule } from './common/common.module';
 import { HttpExceptionFilter } from './common/http-exception.filter';
@@ -52,6 +53,7 @@ export class AppModule {
         KycModule,
         SubscriptionsModule,
         AdminModule,
+        ChainModule,
         ...(env.devEndpoints ? [DevModule] : []),
       ],
       controllers: [HealthController, RegulatoryController],

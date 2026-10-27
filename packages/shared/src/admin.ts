@@ -161,3 +161,55 @@ export interface AuditVerifyDto {
   firstBrokenId: string | null;
   reason: string | null;
 }
+
+// --- tokenization ------------------------------------------------------------
+
+export type AllocationStatusKey = 'PENDING' | 'MINT_SUBMITTED' | 'MINTED' | 'FAILED' | 'REVERSED';
+
+export interface ReconciliationDto {
+  checkedAt: string;
+  ok: boolean;
+  /** Tokens minted per the database (allocations confirmed on-chain). */
+  expectedSupply: string;
+  onChainSupply: string;
+  mismatches: Array<{ wallet: string; email: string | null; expected: string; onChain: string }>;
+}
+
+export interface ChainOfferingDto {
+  offeringId: string;
+  tokenSymbol: string;
+  propertyName: string;
+  offeringStatus: OfferingStatusKey;
+  isDemo: boolean;
+  totalTokens: string;
+  tokensSold: string;
+  contract: {
+    status: 'PLANNED' | 'DEPLOYED' | 'PAUSED' | 'RETIRED';
+    network: string;
+    chainId: number;
+    address: string | null;
+    identityRegistry: string | null;
+    complianceModule: string | null;
+    deployTxHash: string | null;
+    deployedAt: string | null;
+    lastIndexedBlock: string | null;
+  } | null;
+  allocations: Record<AllocationStatusKey, number>;
+  mintedTokens: string;
+  reconciliation: ReconciliationDto | null;
+}
+
+export interface ChainOverviewDto {
+  gateway: { kind: 'simulated'; network: string; chainId: number; head: string; confirmations: number };
+  offerings: ChainOfferingDto[];
+  failed: Array<{ allocationId: string; tokenSymbol: string; email: string; tokens: string; attempts: number; reason: string | null }>;
+}
+
+export interface ChainTickDto {
+  submitted: number;
+  confirmed: number;
+  retried: number;
+  failed: number;
+  reconciled: number;
+  mismatches: number;
+}

@@ -35,6 +35,7 @@ export const PERMISSIONS = {
   'payment:approve': 'Approve outbound payments',
   'audit:read': 'Read the audit log',
   'analytics:read': 'Read platform analytics',
+  'token:operate': 'Deploy contracts on the simulated chain or a testnet and run token operations',
 } as const;
 export type PermissionKey = keyof typeof PERMISSIONS;
 
@@ -46,7 +47,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[]> = {
   COMPLIANCE_OFFICER: ['property:read', 'kyc:review', 'user:read', 'user:block', 'audit:read', 'offering:approve'],
   ADMINISTRATOR: [
     'property:read', 'property:write', 'property:publish', 'document:write', 'offering:write', 'user:read',
-    'finance:record', 'distribution:prepare', 'analytics:read', 'audit:read',
+    'finance:record', 'distribution:prepare', 'analytics:read', 'audit:read', 'token:operate',
   ],
   SUPER_ADMINISTRATOR: Object.keys(PERMISSIONS) as PermissionKey[],
 };

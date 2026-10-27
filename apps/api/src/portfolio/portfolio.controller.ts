@@ -33,6 +33,24 @@ export class PortfolioController {
       orderBy: { firstInvestedAt: 'asc' },
     });
 
+    // Token register status: how much of each holding is already minted on-chain.
+    const allocations = await this.prisma.tokenAllocation.findMany({
+      where: { userId: auth.userId, status: { in: ['PENDING', 'MINT_SUBMITTED', 'MINTED', 'FAILED'] } },
+      select: { offeringId: true, status: true, tokens: true, wallet: { select: { address: true } }, offering: { select: { contract: { select: { network: true, status: true } } } } },
+    });
+    const onChain = (offeringId: string) => {
+      const mine = allocations.filter((a) => a.offeringId === offeringId);
+      const minted = mine.filter((a) => a.status === 'MINTED').reduce((s, a) => s + a.tokens, 0n);
+      const pending = mine.filter((a) => a.status !== 'MINTED').reduce((s, a) => s + a.tokens, 0n);
+      const contract = mine[0]?.offering.contract;
+      return {
+        mintedTokens: toWire(minted),
+        pendingTokens: toWire(pending),
+        network: contract?.status === 'DEPLOYED' ? contract.network : null,
+        wallet: mine.find((a) => a.wallet)?.wallet?.address ?? null,
+      };
+    };
+
     let invested = 0n;
     let estimatedValue = 0n;
     let received = 0n;
@@ -65,6 +83,7 @@ export class PortfolioController {
         projectedAnnualDistribution: toWire(projected),
         offeringStatus: o.status,
         firstInvestedAt: inv.firstInvestedAt.toISOString(),
+        onChain: onChain(o.id),
       };
     });
 

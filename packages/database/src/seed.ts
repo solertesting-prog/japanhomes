@@ -16,7 +16,14 @@ async function main() {
   const rows = buildSeedRows();
 
   // Each model is upserted by primary key; `update` re-applies the fixture so
-  // edits to DEMO data propagate on re-seed.
+  // edits to DEMO data propagate on re-seed — except operational state that
+  // the running platform owns (sales, lifecycle status, visibility, deployed
+  // contracts), which a re-seed must never roll back.
+  const omit = <T extends object, K extends keyof T>(row: T, keys: K[]): Omit<T, K> => {
+    const copy = { ...row };
+    for (const k of keys) delete copy[k];
+    return copy;
+  };
   const upsertAll = async <T extends { id: string }>(
     label: string,
     items: T[],
@@ -48,7 +55,7 @@ async function main() {
           return tx.legalEntity.upsert({ where: { id: e.id }, create: data, update: data });
         });
         await upsertAll('properties', rows.properties as Array<Prisma.PropertyUncheckedCreateInput & { id: string }>, (p) =>
-          tx.property.upsert({ where: { id: p.id }, create: p, update: p }),
+          tx.property.upsert({ where: { id: p.id }, create: p, update: omit(p, ['status', 'featured', 'publishedAt']) }),
         );
         await upsertAll('financials', rows.financials as Array<Prisma.PropertyFinancialUncheckedCreateInput & { id: string }>, (f) =>
           tx.propertyFinancial.upsert({ where: { id: f.id }, create: f, update: f }),
@@ -63,10 +70,14 @@ async function main() {
           tx.propertyOwnership.upsert({ where: { id: o.id }, create: o, update: o }),
         );
         await upsertAll('offerings', rows.offerings as Array<Prisma.TokenOfferingUncheckedCreateInput & { id: string }>, (o) =>
-          tx.tokenOffering.upsert({ where: { id: o.id }, create: o, update: o }),
+          tx.tokenOffering.upsert({
+            where: { id: o.id },
+            create: o,
+            update: omit(o, ['status', 'tokensSold', 'tokensReserved', 'legalApprovalRef', 'approvedById', 'approvedAt']),
+          }),
         );
         await upsertAll('token contracts', rows.contracts as Array<Prisma.TokenContractUncheckedCreateInput & { id: string }>, (c) =>
-          tx.tokenContract.upsert({ where: { id: c.id }, create: c, update: c }),
+          tx.tokenContract.upsert({ where: { id: c.id }, create: c, update: {} }),
         );
         await upsertAll('documents', rows.documents as Array<Prisma.PropertyDocumentUncheckedCreateInput & { id: string }>, (d) =>
           tx.propertyDocument.upsert({ where: { id: d.id }, create: d, update: d }),

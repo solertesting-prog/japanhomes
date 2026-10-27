@@ -1405,3 +1405,41 @@ model IdempotencyRecord {
   @@index([expiresAt])
   @@map("idempotency_records")
 }
+
+// -----------------------------------------------------------------------------
+// DEMO: simulated chain (CHAIN_GATEWAY=simulated)
+// -----------------------------------------------------------------------------
+
+enum SimulatedTxKind {
+  DEPLOY
+  REGISTER_IDENTITY
+  MINT
+}
+
+enum SimulatedTxStatus {
+  CONFIRMED
+  FAILED
+}
+
+/// Transactions of the in-process simulated chain used before a testnet is
+/// connected. It mirrors the rules of the Solidity contracts (verified
+/// receiver, max supply) so the allocation worker and the reconciliation run
+/// end to end. Never used with a real network.
+model SimulatedChainTx {
+  txHash      String            @id @db.VarChar(66)
+  kind        SimulatedTxKind
+  /// Token address (DEPLOY, MINT) or identity registry address (REGISTER_IDENTITY).
+  contract    String            @db.VarChar(42)
+  /// Caller's idempotency reference: resubmitting the same ref returns the same tx.
+  ref         String            @unique @db.VarChar(120)
+  wallet      String?           @db.VarChar(42)
+  amount      BigInt?
+  payload     Json?
+  status      SimulatedTxStatus
+  error       String?           @db.VarChar(200)
+  blockNumber BigInt
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+
+  @@index([contract, kind])
+  @@map("simulated_chain_txs")
+}

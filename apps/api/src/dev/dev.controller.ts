@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { CurrentAuth, Public } from '../auth/decorators';
 import type { AuthContext } from '../common/request-context';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { SimulatedChainGateway } from '../chain/simulated-chain.gateway';
 import { MockKycProvider } from '../kyc/kyc-provider';
 import { KycService } from '../kyc/kyc.service';
 import { MockPaymentProvider } from '../payments/payment-provider';
@@ -28,7 +29,23 @@ export class DevController {
     private readonly subs: SubscriptionsService,
     private readonly mockPay: MockPaymentProvider,
     private readonly audit: AuditService,
+    private readonly chain: SimulatedChainGateway,
   ) {}
+
+  /** Simulated chain: mine N empty blocks now (confirmations without waiting). */
+  @Post('chain/advance')
+  @HttpCode(200)
+  async advanceChain(@Body(new ZodValidationPipe(z.object({ blocks: z.number().int().min(1).max(1000) }))) body: { blocks: number }) {
+    this.chain.advance(body.blocks);
+    return { head: (await this.chain.head()).toString() };
+  }
+
+  /** Simulated chain: the next mint reverts with this reason. */
+  @Post('chain/fail-next-mint')
+  @HttpCode(204)
+  failNextMint(@Body(new ZodValidationPipe(z.object({ reason: z.string().min(3).max(120) }))) body: { reason: string }) {
+    this.chain.failNextMint(body.reason);
+  }
 
   @Public()
   @Get('outbox')

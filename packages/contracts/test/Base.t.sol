@@ -7,8 +7,8 @@ import {IdentityRegistry} from "../src/IdentityRegistry.sol";
 import {PropertyToken} from "../src/PropertyToken.sol";
 
 abstract contract BaseTest is Test {
-    uint16 internal constant JP = 392;
-    uint16 internal constant ES = 724;
+    uint16 internal constant JP = 0x4A50; // "JP"
+    uint16 internal constant ES = 0x4553; // "ES"
     uint256 internal constant SUPPLY = 10_000;
 
     address internal admin = makeAddr("admin");

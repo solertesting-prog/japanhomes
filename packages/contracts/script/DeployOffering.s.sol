@@ -44,7 +44,7 @@ contract DeployOffering is Script {
         compliance.bindToken(address(token));
         // Japan-resident investors only by default; secondary transfers stay off.
         compliance.setCountryRestricted(true);
-        compliance.setCountryAllowed(392, true);
+        compliance.setCountryAllowed(0x4A50, true); // "JP"
         token.grantRole(token.AGENT_ROLE(), agent);
         vm.stopBroadcast();
 

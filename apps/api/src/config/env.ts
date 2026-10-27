@@ -29,6 +29,16 @@ const envSchema = z
     ENABLE_DEV_ENDPOINTS: z.enum(['true', 'false']).optional(),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(10).default(120),
+    /** Where tokens are issued. Only the in-process simulated chain exists so far. */
+    CHAIN_GATEWAY: z.enum(['simulated']).default('simulated'),
+    /** Blocks a mint must be buried under before it counts as final. */
+    CHAIN_CONFIRMATIONS: z.coerce.number().int().min(1).max(64).default(2),
+    /** Simulated chain block time. */
+    CHAIN_BLOCK_TIME_MS: z.coerce.number().int().min(1).default(2_000),
+    /** How often the allocation worker runs; 0 disables the timer (tests). */
+    CHAIN_WORKER_INTERVAL_MS: z.coerce.number().int().min(0).default(15_000),
+    /** Mint attempts before an allocation is parked as FAILED for manual review. */
+    CHAIN_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(3),
   })
   .transform((e) => ({
     ...e,

@@ -4,7 +4,7 @@ Contratos de la Fase 4. **Solo testnet.** Ningún despliegue con valor real sin 
 
 | Contrato | Papel ERC-3643 | Qué hace |
 |---|---|---|
-| `IdentityRegistry` | Identity Registry | Cartera → inversor verificado (`investorId` opaco, país ISO numérico, caducidad del KYC). Sin datos personales on-chain. Varias carteras por inversor. |
+| `IdentityRegistry` | Identity Registry | Cartera → inversor verificado (`investorId` opaco, país ISO alfa-2 en 2 bytes, caducidad del KYC). Sin datos personales on-chain. Varias carteras por inversor. |
 | `Compliance` | Modular Compliance | Reglas por oferta: transferencias secundarias **apagadas por defecto**, lock-up, países permitidos, máximo de tenedores y máximo por inversor. Lleva la contabilidad por inversor. |
 | `PropertyToken` | Token | ERC-20 con 0 decimales y `maxSupply` = `totalTokens` de la oferta. Emisión, `batchMint`, reembolso (`burn`), congelación total/parcial, pausa, `forcedTransfer` y `recoveryAddress` del agente. |
 

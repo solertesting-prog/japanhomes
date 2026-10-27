@@ -13,8 +13,9 @@ import {IIdentityRegistry} from "./interfaces/IIdentityRegistry.sol";
  * identity contracts carrying signed claims from trusted issuers, the platform's
  * KYC agent writes an attestation directly here once the off-chain KYC/AML case
  * is approved. No personal data is stored on-chain: `investorId` is an opaque
- * salted hash computed off-chain, `country` is the ISO 3166-1 numeric code of
- * residence and `expiresAt` mirrors the KYC validity window.
+ * salted hash computed off-chain, `country` is the ISO 3166-1 alpha-2 code of
+ * residence packed in two bytes ("JP" = 0x4A50) and `expiresAt` mirrors the
+ * KYC validity window.
  *
  * [VALIDAR] Production should use the licensed partner's ERC-3643 stack
  * (ONCHAINID + claim topics) or have this simplification approved by counsel.
@@ -56,7 +57,7 @@ contract IdentityRegistry is AccessControl, IIdentityRegistry {
     {
         if (wallet == address(0)) revert ZeroAddress();
         if (investorId == bytes32(0)) revert InvalidInvestorId();
-        if (country == 0 || country > 999) revert InvalidCountry();
+        if (country == 0) revert InvalidCountry();
         if (expiresAt <= block.timestamp) revert ExpiryInPast(expiresAt);
         if (_identities[wallet].investorId != bytes32(0)) revert AlreadyRegistered(wallet);
         _identities[wallet] = Identity(investorId, country, expiresAt);
@@ -72,7 +73,7 @@ contract IdentityRegistry is AccessControl, IIdentityRegistry {
     }
 
     function updateCountry(address wallet, uint16 country) external onlyRole(AGENT_ROLE) {
-        if (country == 0 || country > 999) revert InvalidCountry();
+        if (country == 0) revert InvalidCountry();
         _requireRegistered(wallet).country = country;
         emit CountryUpdated(wallet, country);
     }

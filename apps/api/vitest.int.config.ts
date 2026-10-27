@@ -19,6 +19,9 @@ export default defineConfig({
       PAYMENT_WEBHOOK_SECRET: 'test-payment-webhook-secret-0123456789ab',
       ENABLE_DEV_ENDPOINTS: 'true',
       LOG_LEVEL: 'fatal',
+      // Blocks only advance through /dev/chain/advance: deterministic confirmations.
+      CHAIN_BLOCK_TIME_MS: '1000000000000',
+      CHAIN_WORKER_INTERVAL_MS: '0',
     },
   },
 });

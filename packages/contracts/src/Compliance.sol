@@ -15,7 +15,8 @@ import {IIdentityRegistry} from "./interfaces/IIdentityRegistry.sol";
  *     (see the shared package regulatory gates); only issuance, redemption and agent
  *     forced transfers move tokens until then.
  *   - Optional lock-up: no holder-to-holder transfer before `lockupUntil`.
- *   - Allowed countries of residence (ISO 3166-1 numeric), when restricted.
+ *   - Allowed countries of residence (ISO 3166-1 alpha-2 packed in two bytes,
+ *     "JP" = 0x4A50), when restricted.
  *   - Maximum number of distinct investors holding the token.
  *   - Maximum balance per investor.
  *
