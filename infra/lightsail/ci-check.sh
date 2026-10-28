@@ -13,7 +13,14 @@ CUSTOM_DOMAIN=
 SITE_HOST=localhost
 ENV
 c() { docker compose --env-file .env "$@"; }
-trap 'status=$?; if [ $status -ne 0 ]; then c logs --tail 60 api web caddy || true; fi; c down -v >/dev/null 2>&1 || true; rm -f .env; exit $status' EXIT
+cleanup() {
+  local status=$?
+  if [ "$status" -ne 0 ]; then c logs --tail 60 api web caddy || true; fi
+  c down -v >/dev/null 2>&1 || true
+  rm -f .env
+  exit "$status"
+}
+trap cleanup EXIT
 
 c --profile tools build
 c up -d db
@@ -26,7 +33,13 @@ CURL=(curl -fsS -k --max-time 15)
 for _ in $(seq 1 90); do "${CURL[@]}" "$BASE/" >/dev/null 2>&1 && break; sleep 2; done
 
 echo "== home over HTTPS"
-"${CURL[@]}" "$BASE/" | grep -q 'Japan Property Token'
+home=$("${CURL[@]}" "$BASE/")
+grep -q 'Japan Property Token' <<<"$home"
+echo "== security headers through Caddy"
+headers=$("${CURL[@]}" -o /dev/null -D - "$BASE/")
+grep -qi '^content-security-policy:' <<<"$headers"
+grep -qi '^strict-transport-security:' <<<"$headers"
+if grep -qi '^server:' <<<"$headers"; then echo "Server header leaked"; exit 1; fi
 echo "== seeded catalogue through the web proxy"
 total=$("${CURL[@]}" "$BASE/api/v1/properties?pageSize=1" | python3 -c 'import json,sys; print(json.load(sys.stdin)["total"])')
 test "$total" -ge 6 || { echo "expected DEMO properties, got $total"; exit 1; }
@@ -51,5 +64,6 @@ code=$(curl -s -k -o /dev/null -w '%{http_code}' -b "$jar" -H "x-csrf-token: $cs
 test "$code" = "404" || { echo "self-service admin role answered $code on a public demo"; exit 1; }
 
 echo "== back-office account from the server"
-c run --rm staff --email "ops.$(date +%s)@example.test" --role SUPER_ADMINISTRATOR | grep -q 'One-time password'
+staff=$(c run --rm staff --email "ops.$(date +%s)@example.test" --role SUPER_ADMINISTRATOR)
+grep -q 'One-time password' <<<"$staff"
 echo "DEMO stack OK"

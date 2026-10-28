@@ -69,6 +69,8 @@ test('investor journey from sign-up to dashboard', async ({ page }) => {
   // the code used to turn MFA on is not replayed).
   await page.goto('/account');
   await page.getByRole('button', { name: 'Sign out' }).click();
+  // Sign-out navigates home; wait for it so it cannot override the next navigation.
+  await page.waitForURL((url) => url.pathname === '/');
   await page.goto('/sign-in');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(PASSWORD);
