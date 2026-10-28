@@ -76,8 +76,10 @@ export function AccountView() {
         <Button
           variant="outline"
           onClick={async () => {
-            await signOut();
+            // Leave the protected page first; otherwise the session guard
+            // races us and sends the visitor to the sign-in page.
             router.replace('/');
+            await signOut();
           }}
         >
           {ac.signOut}
