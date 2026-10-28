@@ -1,0 +1,130 @@
+# Public DEMO server on a single machine (AWS Lightsail or any Linux host with
+# Docker). DEMO data, simulated providers and simulated chain only.
+#
+#   cp .env.example .env   # install.sh generates it with random secrets
+#   docker compose up -d --build
+name: jpt-demo
+
+x-api-env: &api-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://jpt:${POSTGRES_PASSWORD:?}@db:5432/jpt?sslmode=disable
+  IP_HASH_SECRET: ${IP_HASH_SECRET:?}
+  PII_ENCRYPTION_KEY: ${PII_ENCRYPTION_KEY:?}
+  KYC_WEBHOOK_SECRET: ${KYC_WEBHOOK_SECRET:?}
+  PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:?}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jpt
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: jpt
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jpt"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # Not published: only the API reaches it.
+
+  # One-off: `docker compose run --rm migrate` (install.sh and update.sh do it).
+  migrate:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://jpt:${POSTGRES_PASSWORD:?}@db:5432/jpt?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["tools"]
+
+  # One-off: `docker compose run --rm seed` loads the DEMO catalogue (idempotent).
+  seed:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: migrate
+    entrypoint: ["sh", "-c", "cd /repo/packages/database && npx --no-install tsx src/seed.ts"]
+    environment:
+      NODE_ENV: production
+      JPT_ALLOW_DEMO_SEED: "true"
+      DATABASE_URL: postgresql://jpt:${POSTGRES_PASSWORD:?}@db:5432/jpt?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["tools"]
+
+  # One-off: `docker compose run --rm staff --email you@example.com --role SUPER_ADMINISTRATOR`
+  staff:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: migrate
+    entrypoint: ["sh", "-c", "cd /repo/packages/database && npx --no-install tsx src/create-staff.ts \"$@\"", "staff"]
+    environment:
+      DATABASE_URL: postgresql://jpt:${POSTGRES_PASSWORD:?}@db:5432/jpt?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["tools"]
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment:
+      <<: *api-env
+      APP_URL: https://${SITE_HOST:?}
+      CORS_ORIGINS: https://${SITE_HOST:?}
+      # Caddy → web proxy → API
+      TRUST_PROXY_HOPS: "2"
+      LOG_LEVEL: info
+      JPT_PUBLIC_DEMO: "true"
+      ENABLE_DEV_ENDPOINTS: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: runtime
+      args:
+        API_URL: http://api:4000
+        NEXT_PUBLIC_SITE_URL: https://${SITE_HOST:?}
+        # Shows the simulated email / KYC / payment helpers in the UI.
+        NEXT_PUBLIC_DEV_TOOLS: "true"
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:4000
+      NEXT_PUBLIC_SITE_URL: https://${SITE_HOST:?}
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_HOST: ${SITE_HOST:?}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

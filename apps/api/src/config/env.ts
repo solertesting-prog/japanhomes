@@ -27,6 +27,12 @@ const envSchema = z
     COOKIE_SECURE: z.enum(['true', 'false']).optional(),
     /** Dev-only helpers: email outbox, simulate KYC result, simulate payment. Never in production. */
     ENABLE_DEV_ENDPOINTS: z.enum(['true', 'false']).optional(),
+    /**
+     * Public demo server (DEMO data only): production build with the simulated
+     * providers reachable, but every helper that could touch another person's
+     * account is restricted (see DevController).
+     */
+    JPT_PUBLIC_DEMO: z.enum(['true', 'false']).default('false'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(10).default(120),
     /** Reverse proxies in front of the API (AWS: ALB → web proxy → API = 2). */
@@ -46,9 +52,10 @@ const envSchema = z
     ...e,
     cookieSecure: e.COOKIE_SECURE ? e.COOKIE_SECURE === 'true' : e.NODE_ENV === 'production',
     devEndpoints: e.ENABLE_DEV_ENDPOINTS ? e.ENABLE_DEV_ENDPOINTS === 'true' : e.NODE_ENV !== 'production',
+    publicDemo: e.JPT_PUBLIC_DEMO === 'true',
   }))
-  .refine((e) => !(e.NODE_ENV === 'production' && e.devEndpoints), {
-    message: 'ENABLE_DEV_ENDPOINTS cannot be true in production',
+  .refine((e) => !(e.NODE_ENV === 'production' && e.devEndpoints && !e.publicDemo), {
+    message: 'ENABLE_DEV_ENDPOINTS cannot be true in production (except a declared public demo: JPT_PUBLIC_DEMO=true)',
     path: ['ENABLE_DEV_ENDPOINTS'],
   });
 

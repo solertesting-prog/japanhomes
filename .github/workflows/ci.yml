@@ -162,6 +162,16 @@ jobs:
           STEP_TAIL: "30"
         run: .github/scripts/step.sh "image smoke test" infra/docker/smoke.sh jpt-api:ci jpt-migrate:ci jpt-web:ci
 
+  demo-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: DEMO server stack (Lightsail setup) end to end
+        env:
+          STEP_NOTICE: "1"
+          STEP_TAIL: "25"
+        run: .github/scripts/step.sh "demo server" infra/lightsail/ci-check.sh
+
   terraform:
     runs-on: ubuntu-latest
     steps:
@@ -177,7 +187,7 @@ jobs:
           ../../../../.github/scripts/step.sh "terraform init" terraform init -backend=false -input=false
           ../../../../.github/scripts/step.sh "terraform validate" terraform validate
       - name: Shell scripts
-        run: .github/scripts/step.sh shellcheck shellcheck -S warning infra/docker/*.sh infra/deploy/*.sh .github/scripts/*.sh packages/contracts/scripts/*.sh
+        run: .github/scripts/step.sh shellcheck shellcheck -S warning infra/docker/*.sh infra/deploy/*.sh infra/lightsail/*.sh infra/lightsail/jpt .github/scripts/*.sh packages/contracts/scripts/*.sh
       - name: Security scan (Checkov)
         env:
           STEP_NOTICE: "1"

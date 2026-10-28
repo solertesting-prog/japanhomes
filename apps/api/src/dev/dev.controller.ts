@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { stableId } from '@jpt/database';
 import { emailSchema, STAFF_ROLES } from '@jpt/shared';
@@ -8,6 +8,7 @@ import { CurrentAuth, Public } from '../auth/decorators';
 import type { AuthContext } from '../common/request-context';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { SimulatedChainGateway } from '../chain/simulated-chain.gateway';
+import { APP_ENV, type AppEnv } from '../config/env';
 import { MockKycProvider } from '../kyc/kyc-provider';
 import { KycService } from '../kyc/kyc.service';
 import { MockPaymentProvider } from '../payments/payment-provider';
@@ -30,12 +31,19 @@ export class DevController {
     private readonly mockPay: MockPaymentProvider,
     private readonly audit: AuditService,
     private readonly chain: SimulatedChainGateway,
+    @Inject(APP_ENV) private readonly env: AppEnv,
   ) {}
+
+  /** Helpers that act on shared state or other accounts do not exist on a public demo. */
+  private notOnPublicDemo() {
+    if (this.env.publicDemo) throw new NotFoundException({ code: 'NOT_FOUND', message: 'Not found' });
+  }
 
   /** Simulated chain: mine N empty blocks now (confirmations without waiting). */
   @Post('chain/advance')
   @HttpCode(200)
   async advanceChain(@Body(new ZodValidationPipe(z.object({ blocks: z.number().int().min(1).max(1000) }))) body: { blocks: number }) {
+    this.notOnPublicDemo();
     this.chain.advance(body.blocks);
     return { head: (await this.chain.head()).toString() };
   }
@@ -44,6 +52,7 @@ export class DevController {
   @Post('chain/fail-next-mint')
   @HttpCode(204)
   failNextMint(@Body(new ZodValidationPipe(z.object({ reason: z.string().min(3).max(120) }))) body: { reason: string }) {
+    this.notOnPublicDemo();
     this.chain.failNextMint(body.reason);
   }
 
@@ -52,8 +61,12 @@ export class DevController {
   async outbox(@Query(new ZodValidationPipe(z.object({ email: emailSchema }))) q: { email: string }) {
     const user = await this.prisma.user.findUnique({ where: { email: q.email } });
     if (!user) return { items: [] };
+    // On a public demo anyone can type any address here, so only the email
+    // confirmation of a not-yet-confirmed account is shown: nothing that could
+    // reset a password or reveal another person's activity.
+    if (this.env.publicDemo && user.emailVerifiedAt) return { items: [] };
     const items = await this.prisma.notification.findMany({
-      where: { userId: user.id, channel: 'EMAIL' },
+      where: { userId: user.id, channel: 'EMAIL', ...(this.env.publicDemo ? { type: 'auth.verify_email' } : {}) },
       orderBy: { createdAt: 'desc' },
       take: 20,
     });
@@ -83,6 +96,7 @@ export class DevController {
     @CurrentAuth() auth: AuthContext,
     @Body(new ZodValidationPipe(z.object({ role: z.enum(STAFF_ROLES) }))) body: { role: (typeof STAFF_ROLES)[number] },
   ) {
+    this.notOnPublicDemo();
     const roleId = stableId('role', body.role);
     await this.prisma.$transaction(async (tx) => {
       await tx.userRole.upsert({

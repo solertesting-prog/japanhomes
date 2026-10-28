@@ -1,0 +1,11 @@
+# Automatic HTTPS (Let's Encrypt) for SITE_HOST, e.g. 13-37-1-2.sslip.io or a
+# custom domain pointing at this server.
+{$SITE_HOST} {
+	encode zstd gzip
+	reverse_proxy web:3000
+	header -Server
+	log {
+		output stdout
+		format console
+	}
+}
